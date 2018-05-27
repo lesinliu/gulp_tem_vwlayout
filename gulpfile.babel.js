@@ -7,6 +7,7 @@ const gulp              = require('gulp'),
       ugLify            = require('gulp-uglify'),//压缩js  
       changed           = require('gulp-changed'),//检查改变状态  
       htmlMin           = require('gulp-htmlmin'),//压缩html  
+      fileinclude       = require('gulp-file-include');
       cleanCSS          = require('gulp-clean-css'),//- 压缩CSS为一行；  
       imageMin          = require('gulp-imagemin'),//压缩图片  
       pngquant          = require('imagemin-pngquant'), // 深度压缩  
@@ -41,9 +42,14 @@ gulp.task('html', () => {
         minifyJS: true,//压缩页面JS  
         minifyCSS: true//压缩页面CSS  
     };  
-    gulp.src('src/**/*.html')  
+    gulp.src(['src/**/*.html','!src/views/include/**.html'])  
+        .pipe( plumber() ) 
+        .pipe(fileinclude({
+            prefix: '@@',
+            basepath: './src/views/include'
+        }))
         .pipe(changed('dist', {hasChanged: changed.compareSha1Digest}))  
-        .pipe(htmlMin(options))  
+        // .pipe(htmlMin(options))  //压缩html
         .pipe(gulp.dest('dist'))  
         .pipe(browserSync.reload({stream:true}));  
 });  
@@ -91,7 +97,7 @@ gulp.task("postcss", () => {
 
 // ========================= 压缩js =========================  
 gulp.task("script",() => {  
-    gulp.src(['src/js/jquery-3.1.0.min.js', 'src/js/index.js'])  
+    gulp.src(['src/js/**/*.js'])  
         .pipe(changed('dist/js', {hasChanged: changed.compareSha1Digest}))  
         .pipe( plumber() ) 
         .pipe(babel({presets:['es2015']}))
@@ -134,7 +140,7 @@ gulp.task('serve', (cb) => {
     // gulp.watch('src/scss/**/*.scss', ['scss']);  
     gulp.watch('src/scss/**/*.scss', ['postcss']);  
     gulp.watch('src/images/*.*', ['images']);  
-    gulp.watch('src/*.html', ['html']);  
+    gulp.watch('src/**/*.html', ['html']);  
 });  
 
 // =========================默认任务=========================
